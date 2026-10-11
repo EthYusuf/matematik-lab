@@ -1,0 +1,28 @@
+# Node
+node_modules/
+frontend/dist/
+*.tsbuildinfo
+frontend/test-results/
+frontend/playwright-report/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Veritabanı (yerel geliştirme SQLite)
+*.db
+*.db-journal
+
+# Ortam
+.env
+.env.*
+!.env.example
+
+# Editör / OS / yerel araç ayarları
+.vscode/
+.idea/
+.claude/
+.DS_Store
+Thumbs.db

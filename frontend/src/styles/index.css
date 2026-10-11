@@ -1,0 +1,373 @@
+@import 'tailwindcss';
+@import 'mafs/core.css';
+@import 'katex/dist/katex.min.css';
+
+/*
+ * Tasarım dili:
+ *  - Açık tema "Defter": sıcak kâğıt, milimetrik ızgara, mürekkep ve çizim kalemi renkleri.
+ *  - Koyu tema "Kara Tahta": yeşilimsi siyah tahta, tebeşir renkleri.
+ * Simülasyon renkleri anlam taşır ve tüm konularda aynı kalır:
+ *   --c-fn (fonksiyon / cos) · --c-hot (kesen / sin) · --c-tan (teğet / türev) · --c-pt (noktalar)
+ */
+
+:root {
+  --bg: #f3efe6;
+  --bg-elev: #fbf9f4;
+  --bg-sunk: #ebe6da;
+  --ink: #17181c;
+  --ink-2: #4a4b52;
+  --ink-3: #85868d;
+  --rule: #ddd6c7;
+  --rule-strong: #c9c0ad;
+  --grid: rgba(36, 72, 201, 0.065);
+  --grid-major: rgba(36, 72, 201, 0.11);
+
+  --c-fn: #2448c9;
+  --c-hot: #e4572e;
+  --c-tan: #0e8a63;
+  --c-pt: #c98a00;
+  --ok: #0e8a63;
+  --bad: #c2371b;
+  --stamp: #c2371b;
+
+  --shadow: 0 1px 0 rgba(23, 24, 28, 0.04), 0 8px 24px -12px rgba(23, 24, 28, 0.18);
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --bg: #121916;
+  --bg-elev: #19221e;
+  --bg-sunk: #0e1412;
+  --ink: #ece8dc;
+  --ink-2: #b9b7ab;
+  --ink-3: #7f8379;
+  --rule: #2a3530;
+  --rule-strong: #3b4842;
+  --grid: rgba(236, 232, 220, 0.035);
+  --grid-major: rgba(236, 232, 220, 0.07);
+
+  --c-fn: #8ab4ff;
+  --c-hot: #ff8a65;
+  --c-tan: #8edb9a;
+  --c-pt: #f4d46b;
+  --ok: #8edb9a;
+  --bad: #ff8a65;
+  --stamp: #ff8a65;
+
+  --shadow: 0 1px 0 rgba(0, 0, 0, 0.3), 0 12px 28px -14px rgba(0, 0, 0, 0.6);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-display: 'Instrument Serif', 'Times New Roman', serif;
+  --font-sans: 'Schibsted Grotesk', ui-sans-serif, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --color-bg: var(--bg);
+  --color-elev: var(--bg-elev);
+  --color-sunk: var(--bg-sunk);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-fn: var(--c-fn);
+  --color-hot: var(--c-hot);
+  --color-tan: var(--c-tan);
+  --color-pt: var(--c-pt);
+  --color-ok: var(--ok);
+  --color-bad: var(--bad);
+}
+
+html {
+  background: var(--bg);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  background-color: var(--bg);
+  /* Milimetrik kâğıt: ince 24px ızgara + kalın 120px ızgara */
+  background-image:
+    linear-gradient(var(--grid-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-major) 1px, transparent 1px),
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:
+    120px 120px,
+    120px 120px,
+    24px 24px,
+    24px 24px;
+  background-position: -1px -1px;
+}
+
+:root[data-theme='dark'] body {
+  /* Tebeşir tozu */
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    linear-gradient(var(--grid-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-major) 1px, transparent 1px);
+  background-size:
+    220px 220px,
+    120px 120px,
+    120px 120px;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--c-hot) 30%, transparent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--c-fn);
+  outline-offset: 2px;
+}
+
+/* ---------- Düğmeler ---------- */
+@layer components {
+  .btn-primary,
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 0.5rem;
+    padding: 0.45rem 0.85rem;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.2;
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease,
+      color 150ms ease,
+      transform 150ms ease;
+  }
+
+  .btn-primary {
+    background: var(--ink);
+    color: var(--bg);
+    border: 1px solid var(--ink);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--ink) 86%, var(--c-hot));
+  }
+
+  .btn-primary:active:not(:disabled),
+  .btn-ghost:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink-2);
+    border: 1px solid var(--rule-strong);
+  }
+
+  .btn-ghost:hover {
+    color: var(--ink);
+    border-color: var(--ink-3);
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+}
+
+/* ---------- Simülasyon çalışma alanı ----------
+ * Mobil: simülasyon → parametreler → ders → görevler
+ * lg:    simülasyon | parametreler, altında ders ve görevler
+ * xl:    ders | simülasyon + görevler | formül + parametreler
+ */
+.workspace {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: 'stage' 'aside' 'lesson' 'challenges';
+}
+
+@media (min-width: 1024px) {
+  .workspace {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    grid-template-areas:
+      'stage aside'
+      'lesson aside'
+      'challenges challenges';
+  }
+}
+
+@media (min-width: 1280px) {
+  .workspace {
+    grid-template-columns: 340px minmax(0, 1fr) 310px;
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'lesson stage aside'
+      'lesson challenges aside';
+    column-gap: 1.5rem;
+    row-gap: 2rem;
+  }
+}
+
+/* ---------- Mafs teması ---------- */
+.MafsView {
+  --mafs-bg: transparent;
+  --mafs-fg: var(--ink);
+  --mafs-origin-color: var(--ink-2);
+  --mafs-line-color: var(--rule-strong);
+  --grid-line-subdivision-color: var(--rule);
+  --mafs-blue: var(--c-fn);
+  --mafs-red: var(--c-hot);
+  --mafs-green: var(--c-tan);
+  --mafs-yellow: var(--c-pt);
+  --mafs-orange: var(--c-hot);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.MafsView text {
+  fill: var(--ink-2);
+}
+
+.MafsView .mafs-shadow {
+  stroke: var(--bg-elev);
+}
+
+/* ---------- KaTeX ---------- */
+.katex {
+  font-size: 1.08em;
+}
+
+.katex-display {
+  margin: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 0;
+}
+
+/* ---------- Kaydırıcı ---------- */
+.sim-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 22px;
+  background: transparent;
+  cursor: pointer;
+  --fill: 50%;
+  --tone: var(--ink);
+}
+
+.sim-range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--tone) var(--fill), var(--rule-strong) var(--fill));
+}
+
+.sim-range::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--tone) var(--fill), var(--rule-strong) var(--fill));
+}
+
+.sim-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  border-radius: 50%;
+  background: var(--bg-elev);
+  border: 2px solid var(--tone);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 120ms ease;
+}
+
+.sim-range::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--bg-elev);
+  border: 2px solid var(--tone);
+}
+
+.sim-range:active::-webkit-slider-thumb {
+  transform: scale(1.25);
+}
+
+/* ---------- Animasyonlar ---------- */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise {
+  animation: rise 640ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes stamp {
+  0% {
+    opacity: 0;
+    transform: rotate(-14deg) scale(2.2);
+  }
+  60% {
+    opacity: 1;
+    transform: rotate(-9deg) scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(-9deg) scale(1);
+  }
+}
+
+.stamp {
+  animation: stamp 520ms cubic-bezier(0.3, 1.4, 0.4, 1) both;
+  color: var(--stamp);
+  border: 2.5px solid currentColor;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  mix-blend-mode: multiply;
+}
+
+:root[data-theme='dark'] .stamp {
+  mix-blend-mode: screen;
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.reveal {
+  animation: reveal 420ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise,
+  .stamp,
+  .reveal {
+    animation: none;
+  }
+}

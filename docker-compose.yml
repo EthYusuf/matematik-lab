@@ -1,0 +1,41 @@
+# Üretime benzer ortam: PostgreSQL + FastAPI + nginx (derlenmiş React).
+#   cp .env.example .env    # MATLAB_SECRET_KEY'i değiştir!
+#   docker compose up --build
+# Uygulama: http://localhost:8080   API dokümanı: http://localhost:8080/api/docs
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: matematik_lab
+      POSTGRES_USER: matlab
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-matlab-dev-password}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U matlab -d matematik_lab"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ./backend
+    environment:
+      MATLAB_ENVIRONMENT: ${MATLAB_ENVIRONMENT:-production}
+      MATLAB_DATABASE_URL: postgresql+psycopg://matlab:${POSTGRES_PASSWORD:-matlab-dev-password}@db:5432/matematik_lab
+      MATLAB_SECRET_KEY: ${MATLAB_SECRET_KEY:?MATLAB_SECRET_KEY ayarlanmalı (.env)}
+      MATLAB_COOKIE_SECURE: ${MATLAB_COOKIE_SECURE:-false}
+      MATLAB_CORS_ORIGINS: '["http://localhost:8080"]'
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:

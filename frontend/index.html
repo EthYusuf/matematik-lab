@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Matematiği dokunarak öğren: etkileşimli simülasyonlar, tahmin et-gözlemle görevleri ve aralıklı tekrar." />
+    <title>Matematik Lab</title>
+    <script>
+      // İlk boyamadan önce temayı uygula (beyaz/siyah yanıp sönmeyi önler).
+      try {
+        var t = localStorage.getItem('matematik-lab-theme');
+        if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
